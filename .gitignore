@@ -1,0 +1,13 @@
+/logs
+target
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
+/project/target
+/project/project
+.directory
+activator
+activator-launch-1.3.6.jar
