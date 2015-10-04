@@ -25,9 +25,22 @@ object Dimension {
     }
   }
 
+  val idWithNameParser = {
+    get[Long]("dimension_id") ~ get[String]("name") map {
+      case id ~ name  => (id, name)
+    }
+  }
+
   def findAll(): Seq[Dimension] = {
     DB.withConnection { implicit c =>
       SQL"SELECT * FROM #$table".as(Dimension.simple *)
+    }
+  }
+
+  def findDimensionByNames(names: Array[String]) : List[(Long, String)] = {
+    val namesLower = names.map(_.toLowerCase.trim).toList
+    DB.withConnection { implicit c =>
+      SQL"SELECT dimension_id, name FROM dimension_name WHERE name_search IN ($namesLower)".as(idWithNameParser.*)
     }
   }
 
