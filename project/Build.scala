@@ -12,6 +12,7 @@ object Build extends Build {
     cache,
     ws,
     evolutions,
+    filters,
     specs2 % Test,
     "com.typesafe.play" %% "anorm" % "2.4.0",
     "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
