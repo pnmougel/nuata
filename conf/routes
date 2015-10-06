@@ -14,3 +14,4 @@ POST        /category              categories.Ctrl.create
 GET         /category/:name        categories.Ctrl.findByName(name)
 POST        /fact                  facts.Ctrl.create
 POST        /ooi                   oois.Ctrl.create
+GET         /:query                search.Ctrl.find(query)
