@@ -11,3 +11,4 @@ target
 .directory
 activator
 activator-launch-1.3.6.jar
+/conf/application.conf
