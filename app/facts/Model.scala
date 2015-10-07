@@ -37,14 +37,14 @@ object Fact {
     }
   }
 
-  def findFacts(oois: Seq[(Long, String, String)], dimensions: Seq[Long]): List[(FactValue, (Long, String, String), Seq[Long])] = {
-    var matchingFacts = List[(FactValue, (Long, String, String), Seq[Long])]()
+  def findFacts(oois: Seq[Long], dimensions: Seq[Long]): List[(FactValue, Long, Seq[Long])] = {
+    var matchingFacts = List[(FactValue, Long, Seq[Long])]()
     val dimensionsSet = dimensions.toSet
     DB.withConnection { implicit c =>
       for (ooi <- oois) {
         val facts = SQL"""
           SELECT id, valueInt, valueFloat FROM fact
-          WHERE ooi_id = ${ooi._1}
+          WHERE ooi_id = ${ooi}
         """.as(simple *)
 
         for(fact <- facts) {
@@ -86,4 +86,34 @@ object Fact {
       factId
     }
   }
+
+  /*
+  def create(facts : Array[FactCreateQuery]) : Option[Long] = {
+    val now = new Date()
+    DB.withTransaction { implicit c =>
+
+    }
+    DB.withConnection { implicit c =>
+      // Insert the fact
+      val factId: Option[Long] = value match {
+        case Right(valueFloat) => {
+          SQL"""INSERT INTO fact (valuefloat, ooi_id, created_at) VALUES ($valueFloat, $ooi, $now)""".executeInsert()
+        }
+        case Left(valueInt) => {
+          SQL"""INSERT INTO fact (valueint, ooi_id, created_at) VALUES ($valueInt, $ooi, $now)""".executeInsert()
+        }
+      }
+
+      // Add the relation to the related dimensions
+      for(dimensionId <- dimensions) {
+        SQL"""
+          INSERT INTO fact_dimension
+          (fact_id, dimension_id)
+          VALUES ($factId, $dimensionId)
+        """.executeInsert()
+      }
+      factId
+    }
+  }
+  */
 }
