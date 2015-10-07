@@ -1,6 +1,3 @@
-This is your new Play application
-=================================
-
 # INSTALL
 
 ## Ubuntu 14.04 64bits
@@ -17,7 +14,7 @@ sudo apt-get update
 Install the required package
 
 """
-sudo apt-get install git openjdk-8-jdk sbt 
+sudo apt-get install git openjdk-8-jdk sbt postgresql-9.3
 """
 
 Change jdk version to 8
@@ -30,6 +27,24 @@ Download the source
 git clone https://github.com/pnmougel/nuata.git
 """
 
+Configure the database 
 
+"""
+create_user <DB_USER_NAME> -P -l
+sudo -i -u postgres
+createdb <DB_NAME>
+"""
 
-This file will be packaged with your application, when using `activator dist`.
+Create and update application.conf with the database connexion information
+* db.default.url
+* db.default.username
+* db.default.password
+
+"""
+cp conf/application.conf.default conf/application.conf
+"""
+
+To test the connection
+"""
+psql -U <DB_USER_NAME> -d <DB_NAME> -h 127.0.0.1 -W
+"""
