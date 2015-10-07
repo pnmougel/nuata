@@ -5,6 +5,8 @@ import facts.Fact
 import oois.OOI
 import play.api.libs.json._
 import play.api.mvc._
+import services.caches.{OoiUnitCache, NameCache}
+import services.timers.Timer
 
 /**
  * Created by nico on 01/10/15.
@@ -18,12 +20,14 @@ class Ctrl extends Controller {
    * @return
    */
   def find(query: String) = Action {
-    val elems = query.split(" ")
-    val oois = OOI.findByNames(elems)
-    val dimensions = Dimension.findDimensionByNames(elems)
+    NameCache.buildCache()
+    OoiUnitCache.buildCache()
 
-    val facts = Fact.findFacts(oois, dimensions.map(_._1))
+    val queryLower = query.toLowerCase().trim()
+    val oois = NameCache.findOOIs(queryLower, "")
+    val dimensions = NameCache.findDimensions(queryLower, "")
 
+    val facts = Fact.findFacts(oois, dimensions)
     val factsJson = facts.map { fact =>
       val valueJson = fact._1.value match {
         case Left(value) => Json.obj("value" -> value)
@@ -31,14 +35,12 @@ class Ctrl extends Controller {
       }
       valueJson ++ Json.obj(
         "ooi" -> Json.obj(
-          "id" -> fact._2._1,
-          "name" -> fact._2._2,
-          "unit" -> fact._2._3
+          "id" -> fact._2,
+          "unit" -> OoiUnitCache.getUnit(fact._2)
         ),
         "dimensions" -> fact._3
       )
     }
-
     Ok(Json.toJson(factsJson))
   }
 }
