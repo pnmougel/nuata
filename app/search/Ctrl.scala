@@ -1,12 +1,11 @@
 package search
 
-import dimensions.Dimension
+import _root_.services.caches._
 import facts.Fact
-import oois.OOI
+import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc._
-import services.caches.{OoiUnitCache, NameCache}
-import services.timers.Timer
+import search.services._
 
 /**
  * Created by nico on 01/10/15.
@@ -20,10 +19,11 @@ class Ctrl extends Controller {
    * @return
    */
   def find(query: String) = Action {
-    NameCache.buildCache()
-    OoiUnitCache.buildCache()
+    NameCache.build()
+    OoiUnitCache.build()
+    LanguageCache.build()
 
-    val queryLower = query.toLowerCase().trim()
+    val queryLower = query.toLowerCase.trim()
     val oois = NameCache.findOOIs(queryLower, "")
     val dimensions = NameCache.findDimensions(queryLower, "")
 
@@ -42,5 +42,27 @@ class Ctrl extends Controller {
       )
     }
     Ok(Json.toJson(factsJson))
+  }
+
+  def clearDb = Action {
+    import play.api.db._
+    import anorm._
+    import anorm.SqlParser._
+    import play.api.Play.current
+
+    val tableNames = List(
+      "category", "category_name",
+      "dimension", "dimension_name", "dimension_category", "dimension_relation", "dimension_relation_type",
+      "fact", "fact_dimension", "fact_source",
+      "language",
+      "ooi", "ooi_name",
+      "source", "unit")
+
+    DB.withConnection { implicit c =>
+      for(tableName <- tableNames) {
+        SQL(s"TRUNCATE $tableName CASCADE").execute
+      }
+    }
+    Ok("Done")
   }
 }
