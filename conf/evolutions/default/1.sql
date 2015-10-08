@@ -9,11 +9,12 @@ CREATE TABLE IF NOT EXISTS Language (
 
 CREATE TABLE IF NOT EXISTS Category (
   id          BIGSERIAL                NOT NULL,
-  name        VARCHAR(255)             NOT NULL,
   description TEXT,
-  created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+  --- created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at  TIMESTAMP NOT NULL,
   PRIMARY KEY (id)
 );
+
 CREATE TABLE IF NOT EXISTS Category_Name (
   id          BIGSERIAL    NOT NULL,
   name        VARCHAR(255) NOT NULL,
@@ -22,13 +23,14 @@ CREATE TABLE IF NOT EXISTS Category_Name (
   category_id BIGINT       NOT NULL REFERENCES Category (id),
   PRIMARY KEY (id)
 );
-CREATE INDEX category_name_idx ON Category_Name USING HASH (name);
+--- CREATE INDEX category_name_idx ON Category_Name USING HASH (name);
+CREATE INDEX category_name_idx ON Category_Name (name);
 
 CREATE TABLE IF NOT EXISTS Dimension (
   id          BIGSERIAL                NOT NULL,
-  name        VARCHAR(255)             NOT NULL,
   description TEXT,
-  created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+  --- created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at  TIMESTAMP NOT NULL,
   PRIMARY KEY (id)
 );
 
@@ -40,15 +42,16 @@ CREATE TABLE IF NOT EXISTS Dimension_Name (
   dimension_id BIGINT       NOT NULL REFERENCES Dimension (id),
   PRIMARY KEY (id)
 );
-CREATE INDEX dimension_name_idx ON Dimension_Name USING HASH (name);
+--- CREATE INDEX dimension_name_idx ON Dimension_Name USING HASH (name);
+CREATE INDEX dimension_name_idx ON Dimension_Name (name);
 
 CREATE TABLE IF NOT EXISTS Dimension_Relation_Type (
   id   BIGSERIAL    NOT NULL,
   name VARCHAR(255) NOT NULL,
   PRIMARY KEY (id)
 );
-CREATE INDEX relation_type_name_idx ON Dimension_Relation_Type USING HASH (name);
-
+--- CREATE INDEX relation_type_name_idx ON Dimension_Relation_Type USING HASH (name);
+CREATE INDEX relation_type_name_idx ON Dimension_Relation_Type (name);
 
 CREATE TABLE IF NOT EXISTS Dimension_Relation (
   parent_id        BIGINT NOT NULL REFERENCES Dimension (id),
@@ -66,9 +69,9 @@ CREATE TABLE IF NOT EXISTS Unit (
 
 CREATE TABLE IF NOT EXISTS OOI (
   id          BIGSERIAL                NOT NULL,
-  name        VARCHAR(255)             NOT NULL,
   description TEXT,
-  created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+  --- created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at  TIMESTAMP NOT NULL,
   unit_id     BIGINT                   NOT NULL REFERENCES Unit (id),
   PRIMARY KEY (id)
 );
@@ -81,14 +84,16 @@ CREATE TABLE IF NOT EXISTS OOI_Name (
   ooi_id      BIGINT       NOT NULL REFERENCES OOI (id),
   PRIMARY KEY (id)
 );
-CREATE INDEX ooi_name_idx ON OOI_Name USING HASH (name);
+--- CREATE INDEX ooi_name_idx ON OOI_Name USING HASH (name);
+CREATE INDEX ooi_name_idx ON OOI_Name (name);
 
 CREATE TABLE IF NOT EXISTS Fact (
   id         BIGSERIAL                NOT NULL,
   ooi_id     BIGINT                   NOT NULL REFERENCES OOI (id),
   valueInt   BIGINT,
   valueFloat DOUBLE PRECISION,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  --- created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP NOT NULL,
   CONSTRAINT has_one_value CHECK ((valueInt IS NOT NULL AND valueFloat IS NULL) OR
                                   (valueInt IS NULL AND valueFloat IS NOT NULL)),
   PRIMARY KEY (id)
