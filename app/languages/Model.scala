@@ -12,7 +12,7 @@ import scala.collection.mutable
  */
 case class Language(id: Long, code: String) {}
 
-case class NameWithLanguage(name: String, language: Option[String]) {
+case class NameWithLanguage(name: String, lang: String) {
   lazy val nameSearch = name.trim().toLowerCase
 }
 
@@ -23,12 +23,15 @@ object Language {
   val languageCache = mutable.HashMap[String, Long]()
 
   def getOrCreate(code: String) : Long = {
-    languageCache.getOrElseUpdate(code, {
+    // languageCache.getOrElseUpdate(code, {
+    languageCache.getOrElse(code, {
       DB.withConnection { implicit c =>
         val languageId = SQL"""SELECT id FROM #$table WHERE code = $code""".as(SqlParser.long("id").singleOpt)
         languageId.getOrElse {
-          val z : Option[Long] = SQL"""INSERT INTO #$table (code) VALUES $code""".executeInsert()
-          z.getOrElse(0L)
+          SQL"""
+               INSERT INTO #$table (code, name)
+               VALUES ($code, $code)"""
+            .executeInsert().asInstanceOf[Option[Long]].get
         }
       }
     })
