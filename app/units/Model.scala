@@ -19,7 +19,8 @@ object Unit {
   val unitCache = mutable.HashMap[String, Long]()
 
   def getOrCreate(name: String) : Long = {
-    unitCache.getOrElseUpdate(name, {
+    // unitCache.getOrElseUpdate(name, {
+    unitCache.getOrElse(name, {
       DB.withConnection { implicit c =>
         val unitId = SQL"""SELECT id FROM #$table WHERE name = $name""".as(SqlParser.long("id").singleOpt)
         unitId.getOrElse {
