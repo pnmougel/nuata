@@ -8,10 +8,11 @@
 # Map static resources from the /public folder to the /assets URL path
 # GET         /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
 
-POST        /dimension             dimensions.Ctrl.create
-POST        /dimension/find        dimensions.Ctrl.findDimensions
-POST        /category              categories.Ctrl.create
-GET         /category/:name        categories.Ctrl.findByName(name)
-POST        /fact                  facts.Ctrl.create
-POST        /ooi                   oois.Ctrl.create
-GET         /:query                search.Ctrl.find(query)
+POST        /dimension              dimensions.Ctrl.create
+POST        /dimension/find         dimensions.Ctrl.findDimensions
+POST        /category               categories.Ctrl.create
+GET         /category/:name         categories.Ctrl.findByName(name)
+POST        /fact                   facts.Ctrl.create
+POST        /ooi                    oois.Ctrl.create
+GET         /clear                  search.Ctrl.clearDb
+GET         /query/:query           search.Ctrl.find(query)
