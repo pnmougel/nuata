@@ -12,7 +12,7 @@ import scala.collection.mutable
 object OoiUnitCache {
   var cache = mutable.HashMap[Long, String]()
 
-  def buildCache() = DB.withConnection { implicit c =>
+  def build() = DB.withConnection { implicit c =>
     val newCache = mutable.HashMap[Long, String]()
     val ooiIdAndUnit = SQL"""SELECT ooi.id, unit.name FROM ooi, unit WHERE ooi.unit_id = unit.id"""
       .as(long("ooi.id") ~ str("unit.name") *).toList
