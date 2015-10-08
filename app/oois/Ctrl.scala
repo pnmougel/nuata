@@ -1,6 +1,6 @@
 package oois
 
-import languages.NameWithLanguage
+import languages.{Language, NameWithLanguage}
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.json.Json._
@@ -17,18 +17,12 @@ class Ctrl extends Controller {
    * @return
    */
   private def doInsert(query: OOICreateQuery) : JsObject = {
-    val id = OOI.insert(query.name, query.unit, query.description, query.names.getOrElse(List[NameWithLanguage]()))
+    val id = OOI.insert(query)
     Json.obj("id" -> id, "created" -> true)
   }
 
   /**
    * Create a new object of interest
-   * If forceInsert is true, the category will always be created
-   * otherwise
-   * - if a single category with the same name exists the id of this category is returned and the category is not created
-   * - if a several categories with the same name exists the ids of these categories are returned and the category is not created
-   * - if there is no categories with a matching name, the category is created
-   * @return
    */
   def create = Action(parse.json) { implicit rs =>
     rs.body.validate[OOICreateQuery].map { query =>
@@ -36,12 +30,13 @@ class Ctrl extends Controller {
       val jsonRet = if(forceInsert) {
         doInsert(query)
       } else {
-        val oois = OOI.findByName(query.name)
+        val namesWithLanguageIds = query.names.map(name => (name.name, Language.getOrCreate(name.lang)))
+        val oois = OOI.findByNames(namesWithLanguageIds)
         if(oois.isEmpty) {
           doInsert(query)
         } else {
           if(oois.length == 1) {
-            Json.obj("created" -> false, "id" -> oois(0).id, "entry" -> toJson(oois(0)))
+            Json.obj("created" -> false, "id" -> oois(0), "entry" -> toJson(oois(0)))
           } else {
             Json.obj("created" -> false, "entries" -> toJson(oois))
           }

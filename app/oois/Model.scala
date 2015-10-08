@@ -7,6 +7,7 @@ import play.api.db._
 import anorm._
 import anorm.SqlParser._
 import play.api.Play.current
+import shared.ModelWithNames
 
 /**
  * Created by nico on 01/10/15.
@@ -15,7 +16,7 @@ import play.api.Play.current
  */
 case class OOI(id: Long, name: String, description: Option[String]) {}
 
-object OOI {
+object OOI extends ModelWithNames("ooi") {
   val simple = {
     get[Long]("id") ~ get[String]("name") ~ get[Option[String]]("description") map {
       case id ~ name ~ description  => OOI(id, name, description)
@@ -79,26 +80,40 @@ object OOI {
     }
   }
 
-  def insert(name: String, unit: String, description: Option[String], names: List[NameWithLanguage]) : Option[Long] = {
+  def insert(query: OOICreateQuery) : Long = {
     val now = new Date()
     DB.withConnection { implicit c =>
       // Get the corresponding unit id
-      val unitId = units.Unit.getOrCreate(unit)
+      val unitId = units.Unit.getOrCreate(query.unit)
 
       // Save the languages
       val ooiId: Option[Long] = SQL"""
-             INSERT INTO #$tableName (name, description, created_at, unit_id)
-             VALUES  ($name, $description, $now, $unitId)
+             INSERT INTO #$tableName (description, created_at, unit_id)
+             VALUES  (${query.description}, $now, ${unitId})
              """.executeInsert()
-      for(name <- NameWithLanguage(name, None) :: names) {
-        val languageId = for(languageCode <- name.language) yield { Language.getOrCreate(languageCode) }
+      for(name <- query.names) {
+        val languageId = Language.getOrCreate(name.lang)
         SQL"""
           INSERT INTO ooi_name
           (name, name_search, language_id, ooi_id)
           VALUES (${name.name}, ${name.nameSearch}, $languageId, $ooiId)
         """.executeInsert()
       }
-      ooiId
+      ooiId.get
     }
   }
+//
+//
+//  def findByNames(names: Seq[(String, Long)]) : List[Long] = {
+//    DB.withConnection { implicit c =>
+//      val queryNameSearch = names.map(name => {
+//        s"(name_search = '${name._1}' AND language_id = ${name._2})"
+//      }).mkString(" OR ")
+//      SQL(s"""
+//        SELECT DISTINCT(ooi_id)
+//        FROM ooi_name
+//        WHERE $queryNameSearch
+//      """).as(long("ooi_id") *)
+//    }
+//  }
 }

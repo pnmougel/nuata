@@ -9,15 +9,13 @@ import languages.NameWithLanguage
 
 /**
  *
- * @param name
  * @param description
  * @param names
  * @param unit
  * @param forceInsert
  */
 case class OOICreateQuery(
-              name: String,
               description: Option[String],
-              names: Option[List[NameWithLanguage]],
+              names: List[NameWithLanguage],
               unit: String,
               forceInsert: Option[Boolean])

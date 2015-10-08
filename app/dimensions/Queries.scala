@@ -10,14 +10,12 @@ import languages.NameWithLanguage
 /**
  * Query to create a dimension
  *
- * @param name Displayed name of the dimension
  * @param names Names of the dimension used for search
  * @param categories Id of the category of the created dimension
  * @param description A text describing the dimension
  * @param forceInsert If true, force the creation of the dimension even if a similar dimension exists
  */
-case class DimensionCreateQuery(name: String,
-                                names: Option[List[NameWithLanguage]],
+case class DimensionCreateQuery(names: List[NameWithLanguage],
                                 categories: List[Long],
                                 description: Option[String],
                                 forceInsert: Option[Boolean])
