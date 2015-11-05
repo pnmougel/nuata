@@ -6,7 +6,6 @@ import models.{CategoryModel, DimensionModel}
 import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
 import play.api.libs.json.{JsValue, Json}
-import queries.DimensionQuery
 import repositories.commons.LocalizedNamedItemRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global

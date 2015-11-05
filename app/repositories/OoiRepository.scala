@@ -6,7 +6,6 @@ import models.{CategoryModel, OoiModel}
 import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
 import play.api.libs.json.{JsValue, Json}
-import queries.OOI
 import repositories.DimensionRepository._
 import repositories.commons.LocalizedNamedItemRepository
 
