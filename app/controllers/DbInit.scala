@@ -2,11 +2,11 @@ package controllers
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.mappings.{FieldType, StringFieldDefinition, MappingDefinition}
+import com.sksamuel.elastic4s.mappings._
 import elasticsearch.ElasticSearch
-import org.elasticsearch.common.joda.time.DateTimeFieldType
 import play.api.mvc.{Action, Controller}
 import com.sksamuel.elastic4s.mappings.FieldType._
+import shared.Languages
 
 /**
  * Created by nico on 14/10/15.
@@ -19,10 +19,9 @@ class DbInit extends Controller {
     Thread.sleep(1000)
 
     val fields = List("names", "descriptions")
-    val languages = Map("en" -> EnglishLanguageAnalyzer, "fr" -> FrenchLanguageAnalyzer)
 
     val baseQuery = for(field <- fields) yield {
-      val langFields = for((lang, langAnalyzer) <- languages.toList) yield {
+      val langFields = for((lang, langAnalyzer) <- Languages.analyzers.toList) yield {
         lang typed StringType analyzer langAnalyzer fields("raw" typed StringType index "not_analyzed")
       }
       //
@@ -31,6 +30,7 @@ class DbInit extends Controller {
     }
 
     val categoryIds = "categoryIds" typed StringType index "not_analyzed"
+    val parentIds = "parentIds" typed StringType index "not_analyzed"
     val unitIds = "unitIds" typed StringType index "not_analyzed"
 
     val increaseQueueSizeSetting = Map(
@@ -49,9 +49,9 @@ class DbInit extends Controller {
 
     ElasticSearch.client.execute {
       create index "nuata" mappings(
-        "category" as (baseQuery),
-        "dimension" as (categoryIds :: baseQuery),
-        "unit" as (baseQuery),
+        "category" as baseQuery,
+        "dimension" as (parentIds :: categoryIds :: baseQuery),
+        "unit" as baseQuery,
         "ooi" as (unitIds :: baseQuery),
         "fact" as (
           "value" typed DoubleType,
@@ -59,6 +59,11 @@ class DbInit extends Controller {
           "at" typed DateType,
           "dimensionIds" typed StringType index "not_analyzed",
           "ooiId" typed StringType index "not_analyzed"
+        ),
+        "query" as (
+          "query" typed StringType,
+          "ip" typed StringType,
+          "at" typed DateType
         )
       )
     }.await
