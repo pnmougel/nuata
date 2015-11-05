@@ -1,8 +1,8 @@
 package services
 
+/*
 import play.api.libs.json._
 import play.api.libs.json.Json._
-import services.Lang.Lang
 
 /**
  * Created by nico on 01/10/15.
@@ -17,7 +17,8 @@ object Categories extends ServerConnection {
       )
     }
   }
-  case class CategoryResponse(isCreated: Boolean, matchingIds: List[Long]) extends ServerResponse
+//  case class CategoryResponse(isCreated: Boolean, matchingIds: List[Long]) extends ServerResponse
+//  implicit val jsonResponseFormat = Json.format[CategoryResponse]
 
   def registerCategory(names: Seq[(String, Lang)], description: Option[String] = None) = {
     val newItem = Category(names, description)
@@ -25,12 +26,18 @@ object Categories extends ServerConnection {
     newItem
   }
 
-  def parseResponse(body: String) = {
-    implicit val jsonResponseFormat = Json.format[CategoryResponse]
-    Json.parse(body).as[List[CategoryResponse]]
-  }
+//  def parseResponse(body: String) = {
+//    val res = Json.parse(body).as[List[CategoryResponse]]
+//    for(r <- res) {
+//      if(!r.id.isDefined && r.matchingIds.length == 1) {
+//        r.id = Some(r.matchingIds(0))
+//      }
+//    }
+//    res
+//  }
 
   def update() = {
     doUpdate("category")
   }
 }
+*/

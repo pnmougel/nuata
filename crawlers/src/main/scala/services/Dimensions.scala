@@ -1,5 +1,6 @@
 package services
 
+/*
 import play.api.libs.json.Json
 import play.api.libs.json.Json._
 import services.Categories.Category
@@ -20,20 +21,15 @@ object Dimensions extends ServerConnection {
       )
     }
   }
-  case class DimensionResponse(isCreated: Boolean, matchingIds: List[Long]) extends ServerResponse
-
   def registerDimension(names: Seq[(String, Lang)], categories: List[Category], description: Option[String] = None) = {
     val newItem = Dimension(names, categories, description)
     items = newItem :: items
     newItem
   }
 
-  def parseResponse(body: String) = {
-    implicit val jsonResponseFormat = Json.format[DimensionResponse]
-    Json.parse(body).as[List[DimensionResponse]]
-  }
 
   def update() = {
     doUpdate("dimension")
   }
 }
+*/

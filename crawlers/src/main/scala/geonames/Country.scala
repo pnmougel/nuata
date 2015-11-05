@@ -1,28 +1,31 @@
 package geonames
 
-import services._
+import querybuilder.{LocalizedString, Query, Lang}
 
 import scala.collection.mutable
 import scala.io.Source
+import scala.util.Random
 
 /**
  * Created by nico on 02/10/15.
  */
-case class Country(name: String, iso: String, iso3: String, isoNumeric: String, fips: String,
-                    capital: String, area: Double, population: Int, continent: String, tld: String,
-                    currencyCode: String, currencyName: String, phone: String, postalCodeFormat: String,
-                    languages: Array[String], geonameId: Option[Int], neighbours: Array[String],
-                    equivalentFipsCode: Option[String])
 
 object Country {
-  val continentCodeToName = Map(
-    "AF" -> List(Lang.en("Africa"), Lang.fr("Afrique")),
-    "OC" -> List(Lang.en("Australia"), Lang.fr("Océanie")),
-    "EU" -> List(Lang.en("Europe"), Lang.fr("Europe")),
-    "AN" -> List(Lang.en("Antartica"), Lang.fr("Antartique")),
-    "SA" -> List(Lang.en("South America"), Lang.fr("Amérique du sud")),
-    "NA" -> List(Lang.en("North America"), Lang.fr("Amérique du nord")),
-    "AS" -> List(Lang.en("Asia"), Lang.fr("Asie")))
+  case class Country(name: String, iso: String, iso3: String, isoNumeric: String, fips: String,
+                     capital: String, area: Double, population: Int, continent: String, tld: String,
+                     currencyCode: String, currencyName: String, phone: String, postalCodeFormat: String,
+                     languages: Array[String], geonameId: Option[Int], neighbours: Array[String],
+                     equivalentFipsCode: Option[String])
+
+  val continentCodeToName = Map[String, List[LocalizedString]](
+    "AF" -> (Lang.en("Africa") ::: Lang.fr("Afrique")),
+    "OC" -> (Lang.en("Australia") ::: Lang.fr("Océanie")),
+    "EU" -> (Lang.en("Europe") ::: Lang.fr("Europe")),
+    "AN" -> (Lang.en("Antartica") ::: Lang.fr("Antartique")),
+    "SA" -> (Lang.en("South America") ::: Lang.fr("Amérique du sud")),
+    "NA" -> (Lang.en("North America") ::: Lang.fr("Amérique du nord")),
+    "AS" -> (Lang.en("Asia") ::: Lang.fr("Asie")))
+
 
   def main(args: Array[String]) = {
     read()
@@ -34,36 +37,62 @@ object Country {
   var countries = List[Country]()
 
   def insert() = {
+    val query = new Query()
+
+    // Create categories
+    val areaInMapCategory = query.addCategory(
+      Lang.en("Area in a map") ::: Lang.fr("Zone géographique"),
+      Lang.en("Something that can be displayed in a map"))
+    val continentCategory = query.addCategory(
+      Lang.en("Continent") ::: Lang.fr("Continent"),
+      Lang.en("A continent is one of several very large landmasses on Earth. This category is based on the model with 7 continents"))
+    val countryCategory = query.addCategory(Lang.en("Country") ::: Lang.fr("Pays"))
+    val cityCategory = query.addCategory(Lang.en("City") ::: Lang.fr("Ville"))
+    val capitalCategory = query.addCategory(
+      Lang.en("Capital") ::: Lang.fr("Capitale"),
+      Lang.en("The area of a country, province, region, or state, regarded as enjoying primary status, usually but not always the seat of the government"))
+    val currencyCategory = query.addCategory(
+      Lang.en("Currency") ::: Lang.fr("Monnaie"),
+      Lang.en("A system of money (monetary units) in common use, especially in a nation"))
 
     // Create objects of interests
-    var resOOI = OOIs.create("Area", "square meter", Some("Surface of an area expressed in square meters"))
-    val areaOOIId = resOOI.id.get
-    resOOI = OOIs.create("Population", "person", Some("A number of person"))
-    val populationOOIId = resOOI.id.get
+    val squareMeterUnit = query.addUnit(querybuilder.Lang.en("square meter"))
+    val personUnit = query.addUnit(querybuilder.Lang.en("person"))
+
+    val areaOOI = query.addOOI(
+      querybuilder.Lang.en("Area"),
+      querybuilder.Lang.en("Surface of an area"),
+      units = List(squareMeterUnit))
+
+    val populationOOI = query.addOOI(
+      querybuilder.Lang.en("Population"),
+      querybuilder.Lang.en("A number of person"),
+      units = List(personUnit))
 
     // Create continents
     for(continent <- continents) {
-      Dimensions.registerDimension(continentCodeToName(continent),
-        List(GNCat.areaInMapCategory, GNCat.continentCategory))
+      query.addDimension(continentCodeToName(continent), categories = List(areaInMapCategory, continentCategory))
     }
 
     // Create currencies
-    for(currency <- currencies) {
-      Dimensions.registerDimension(List(Lang.en(currency)), List(GNCat.currencyCategory))
+    for(currency <- currencies; if currency.nonEmpty) {
+      query.addDimension(Lang.en(currency), categories = List(areaInMapCategory, currencyCategory))
     }
-    Dimensions.update()
 
     // Create countries and their capitals
     for(country <- countries) {
-      val resCountry = Dimensions.registerDimension(List(Lang.en(country.name)),
-        List(GNCat.areaInMapCategory, GNCat.countryCategory))
-      Dimensions.registerDimension(List(Lang.en(country.capital)),
-        List(GNCat.areaInMapCategory, GNCat.cityCategory, GNCat.capitalCategory))
-      Dimensions.update()
+      if(country.name.nonEmpty) {
+        val countryDimension = query.addDimension(Lang.en(country.name), categories = List(areaInMapCategory, countryCategory))
+        query.addFact(country.area, List(countryDimension), areaOOI, None)
+        query.addFact(country.population, List(countryDimension), populationOOI, None)
+      }
 
-      Facts.create(country.area, List(resCountry.id.get), areaOOIId)
-      Facts.create(country.population, List(resCountry.id.get), populationOOIId)
+      if(country.capital.nonEmpty) {
+        query.addDimension(Lang.en(country.capital), categories = List(areaInMapCategory, cityCategory, capitalCategory))
+      }
     }
+
+    println(query.toPrettyJson)
   }
 
   def read() = {

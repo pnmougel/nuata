@@ -1,6 +1,5 @@
 package geonames
 
-import services.Categories
 
 import scala.collection.mutable
 import scala.io.Source

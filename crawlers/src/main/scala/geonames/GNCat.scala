@@ -1,5 +1,6 @@
 package geonames
 
+/*
 import services.{Categories, Lang}
 
 /**
@@ -12,5 +13,10 @@ object GNCat{
   val cityCategory = Categories.registerCategory(Seq(Lang.en("City"), Lang.fr("Ville")))
   val capitalCategory = Categories.registerCategory(Seq(Lang.en("Capital"), Lang.fr("Capitale")), Some("The area of a country, province, region, or state, regarded as enjoying primary status, usually but not always the seat of the government"))
   val currencyCategory = Categories.registerCategory(Seq(Lang.en("Currency"), Lang.fr("Monnaie")), Some("A system of money (monetary units) in common use, especially in a nation"))
-  Categories.update()
+
+  def update = {
+    Categories.update()
+  }
+
 }
+*/

@@ -7,6 +7,7 @@ package services
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import scalaj.http._
+import oois.OOICreateQuery
 
 /**
  * Created by nico on 01/10/15.
@@ -14,17 +15,14 @@ import scalaj.http._
 object OOIs {
   case class OOI(id: Long, name: String, description: Option[String]) {}
   implicit val ooiFormat = Json.format[OOI]
-  case class OOIResponse(created: Boolean, id: Option[Long], entry: Option[OOI], entries: Option[List[OOI]])
+  case class OOIResponse(created: Boolean, id: Option[Long], entry: Option[Long], entries: Option[List[OOI]])
   implicit val jsonQueryFormat = Json.format[OOIResponse]
 
-  def create(name: String, unit: String, description: Option[String] = None, names: Array[String] = Array[String](), forceInsert: Boolean = false): OOIResponse = {
-    val query = Json.obj(
-      "name" -> name,
-      "unit" -> unit,
-      "description" -> description,
-      "names" -> names
-    )
-    val res = Http(s"${Config.serverUrl}/ooi").postData(Json.stringify(query)).header("content-type", "application/json").asString
+  def create(query : OOICreateQuery): OOIResponse = {
+    import oois.JsonFormat._
+
+    val res = Http(s"${Config.serverUrl}/ooi").postData(Json.stringify(Json.toJson(query))).header("content-type", "application/json").asString
+    println(res.body)
     Json.parse(res.body).as[OOIResponse]
   }
 }
