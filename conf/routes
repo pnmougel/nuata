@@ -6,10 +6,8 @@
 
 GET         /count/facts            controllers.Stats.countFacts
 GET         /q/:query               controllers.Search.searchFacts(query)
-POST        /data                   controllers.Update.update
 POST        /init                   controllers.DbInit.init
 
-POST        /test                   controllers.Update.test
 GET         /autocomplete/:query    controllers.AutoComplete.autoComplete(query)
 
 POST         /index/:model          controllers.CrudCtrl.index(model)
