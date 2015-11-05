@@ -3,16 +3,15 @@
 # ~~~~
 
 # Home page
-# GET         /                    controllers.Application.index
 
-# Map static resources from the /public folder to the /assets URL path
-# GET         /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
+GET         /count/facts            controllers.Stats.countFacts
+GET         /q/:query               controllers.Search.searchFacts(query)
+POST        /data                   controllers.Update.update
+POST        /init                   controllers.DbInit.init
 
-POST        /dimension              dimensions.Ctrl.create
-POST        /dimension/find         dimensions.Ctrl.findDimensions
-POST        /category               categories.Ctrl.create
-GET         /category/:name         categories.Ctrl.findByName(name)
-POST        /fact                   facts.Ctrl.create
-POST        /ooi                    oois.Ctrl.create
-GET         /clear                  search.Ctrl.clearDb
-GET         /query/:query           search.Ctrl.find(query)
+POST        /test                   controllers.Update.test
+GET         /autocomplete/:query    controllers.AutoComplete.autoComplete(query)
+
+POST         /index/:model          controllers.CrudCtrl.index(model)
+POST         /search/:model         controllers.CrudCtrl.find(model)
+POST         /match/:model          controllers.CrudCtrl.findMatch(model)

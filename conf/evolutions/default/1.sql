@@ -90,6 +90,7 @@ CREATE INDEX ooi_name_idx ON OOI_Name (name);
 CREATE TABLE IF NOT EXISTS Fact (
   id         BIGSERIAL                NOT NULL,
   ooi_id     BIGINT                   NOT NULL REFERENCES OOI (id),
+  at         TIMESTAMP,
   valueInt   BIGINT,
   valueFloat DOUBLE PRECISION,
   --- created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -129,6 +130,16 @@ CREATE TABLE IF NOT EXISTS Dimension_Category (
   category_id  BIGINT NOT NULL REFERENCES Category (id),
   PRIMARY KEY (dimension_id, category_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS Queries (
+  id BIGSERIAL NOT NULL,
+  query  VARCHAR(255) NOT NULL,
+  created_at  TIMESTAMP NOT NULL,
+  created_by  VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id)
+);
+
 
 # --- !Downs
 

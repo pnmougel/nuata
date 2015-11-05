@@ -2,7 +2,7 @@ package shared.matchers.test
 
 import org.specs2.mutable._
 import shared.Query
-import shared.matchers.{DateMatcher, StringQueryMatcher, YearMatcher}
+import shared.matchers._
 import org.specs2.runner._
 import org.junit.runner._
 /**
