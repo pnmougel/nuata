@@ -8,7 +8,6 @@ import org.json4s.{DefaultFormats, Extraction}
 import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc.{Action, Controller, Request}
-import queries.CreateOption
 import repositories._
 import repositories.commons.LocalizedNamedItemRepository
 
@@ -19,7 +18,7 @@ import scala.concurrent.Future
  * Created by nico on 05/11/15.
  */
 class CrudCtrl extends Controller with Json4s {
-  implicit val formats = DefaultFormats + new EnumSerializer(CreateOption)
+  implicit val formats = DefaultFormats
 
   def getItem(model: String, request: Request[json4s.JValue]) = {
     model match {
