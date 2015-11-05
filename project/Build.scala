@@ -27,12 +27,15 @@ object Build extends Build {
 //    "org.json4s" %% "json4s-native" % "3.3.0",
     "org.json4s" %% "json4s-jackson" % "3.3.0",
     "org.json4s" % "json4s-ext_2.10" % "3.3.0",
+    "com.github.tototoshi" %% "play-json4s-jackson" % "0.4.2",
+    "com.github.tototoshi" %% "play-json4s-test-jackson" % "0.4.2" % "test",
 
     // Json extra
     "io.megl" % "play-json-extra_2.11" % "2.4.3",
 
     // Elasticsearch
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4",
+    "com.sksamuel.elastic4s" % "elastic4s-jackson_2.11" % "1.7.4",
 
     // Language detection
     "com.optimaize.languagedetector" % "language-detector" % "0.5"

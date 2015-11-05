@@ -1,4 +1,4 @@
-package models
+package queries
 
 /**
  * Created by nico on 14/10/15.
