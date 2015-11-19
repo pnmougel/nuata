@@ -22,7 +22,7 @@ class Search extends Controller  {
 
         val defaultTermQueries = List(
           filteredQuery filter termsFilter("dimensionIds", dimensionIdToHit.keys.toList : _*),
-          filteredQuery filter termsFilter("ooiId", ooiIdToHit.keys.toList : _*)
+          filteredQuery filter termsFilter("ooiIds", ooiIdToHit.keys.toList : _*)
         )
 
         val esQuery = search in "nuata" / "fact" query bool { must(defaultTermQueries)}
