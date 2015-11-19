@@ -2,6 +2,7 @@ package querybuilder
 
 import org.json4s.CustomSerializer
 import org.json4s.JsonAST._
+import querybuilder.serializers.ItemSerializable
 
 import scala.collection.mutable
 import scala.util.Random
@@ -9,22 +10,9 @@ import scala.util.Random
 /**
  * Created by nico on 20/10/15.
  */
-abstract class JsonSerializable(names: List[LocalizedString], descriptions: List[LocalizedString])
-  extends CustomSerializer[JsonSerializable](format => (
-  { case _ => null },
-  { case serializable: JsonSerializable =>
-    serializable.serialize
-  })) {
-
-  lazy val ref = {
-    val alphaNum = ('0' to '9') ++ ('a' to 'z') ++ ('A' to 'Z')
-    val code = (for(i <- 0 until 8) yield { alphaNum(Random.nextInt(alphaNum.length)) }).mkString("")
-    if(names.headOption.isEmpty) {
-      code
-    } else {
-      names.head.str.replaceAll(" ", "_").toLowerCase() + "_" + code
-    }
-  }
+abstract class JsonSerializable(names: List[LocalizedString], descriptions: List[LocalizedString], kind: String)
+  extends ItemSerializable
+{
 
   def localizedStringToJson(localizedStrings : List[LocalizedString], fieldName: String) = {
     val langToNames = mutable.HashMap[String, List[JValue]]()
@@ -36,12 +24,24 @@ abstract class JsonSerializable(names: List[LocalizedString], descriptions: List
     })
   }
 
-  val baseFields : List[JField] = {
-    JField("names", localizedStringToJson(names, "name")) ::
-      JField("descriptions", localizedStringToJson(descriptions, "description")) ::
-      JField("ref", JString(ref)) :: Nil
+
+  def localizedDescriptionToJson(localizedStrings : List[LocalizedString], fieldName: String) = {
+    JObject(for(localizedString <- localizedStrings) yield {
+      JField(localizedString.lang, JString(localizedString.str))
+    })
   }
 
+
+  def nameToString = {
+    names.map(x => s"${x.str}/${x.lang}").mkString(" - ")
+  }
+
+  val baseFields : List[JField] = {
+    JField("names", localizedStringToJson(names, "name")) ::
+      JField("descriptions", localizedDescriptionToJson(descriptions, "description")) ::
+//      JField("ref", JString(ref)) ::
+      Nil
+  }
   def serialize: JValue
 }
 

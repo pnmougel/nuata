@@ -17,9 +17,12 @@ class FactSerializer extends CustomSerializer[Fact](format => (
     val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
     df.setTimeZone(TimeZone.getTimeZone("UTC"))
 
-    val dimensionsRefs = fact.dimensions.map(dimension => JString(dimension.ref))
-    val ooiRef = JString(fact.ooi.ref)
-    var fields = JField("dimensions", JArray(dimensionsRefs)) :: JField("ooi", ooiRef) :: Nil
+    val dimensionIds = fact.getIds(fact.dimensions)
+    val ooiIds = fact.getIds(List(fact.ooi))
+    var fields = JField("dimensionIds", dimensionIds) :: JField("ooiIds", ooiIds) :: Nil
+//    val dimensionsRefs = fact.dimensions.map(dimension => JString(dimension.ref))
+//    val ooiRef = JString(fact.ooi.ref)
+//    var fields = JField("dimensions", JArray(dimensionsRefs)) :: JField("ooi", ooiRef) :: Nil
     for(date <- fact.at) { fields = JField("at", JString(df.format(date))) :: fields }
     for(v <- fact.value) { fields = JField("value", JDouble(v)) :: fields }
     for(v <- fact.valueLong) { fields = JField("valueInt", JLong(v)) :: fields }

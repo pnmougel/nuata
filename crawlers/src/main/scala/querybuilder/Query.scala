@@ -5,12 +5,15 @@ import java.util.Date
 import org.json4s.NoTypeHints
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization._
-import querybuilder.serializers.{QuerySerializer, FactSerializer}
+import querybuilder.serializers.{ItemSerializable, QuerySerializer, FactSerializer}
+
+import scala.collection.mutable
+import scalaj.http.Http
 
 /**
  * Created by nico on 20/10/15.
  */
-class Query() {
+class Query(server: String = "http://localhost:9000") {
   var categories = Vector[Category]()
   var dimensions = Vector[Dimension]()
   var oois = Vector[OOI]()
@@ -24,8 +27,8 @@ class Query() {
     newCategory
   }
 
-  def addDimension(names: List[LocalizedString], descriptions: List[LocalizedString] = List(), categories: List[Category]): Dimension = {
-    val newDimension = new Dimension(names, descriptions, categories)
+  def addDimension(names: List[LocalizedString], descriptions: List[LocalizedString] = List(), categories: List[Category], parents: List[Dimension] = List()): Dimension = {
+    val newDimension = new Dimension(names, descriptions, categories, parents)
     dimensions :+= newDimension
     newDimension
   }
@@ -52,9 +55,82 @@ class Query() {
     facts :+= newFact
     newFact
   }
+  case class MappedIds(_id: List[String])
 
-  implicit val formats = Serialization.formats(NoTypeHints) + new QuerySerializer()
-  def toJson: String = write(this)
+  implicit val formats = Serialization.formats(NoTypeHints) // + new QuerySerializer()
 
-  def toPrettyJson: String = writePretty(this)
+
+  var dimensionsDep = Vector[Vector[ItemSerializable]]()
+  def buildDependencies = {
+    var dimensionsToPrune = List(dimensions :_*)
+    val addedItems = mutable.HashSet[ItemSerializable]()
+    while(!dimensionsToPrune.isEmpty) {
+      var resolvedDimensions = Vector[ItemSerializable]()
+      dimensionsToPrune = dimensionsToPrune.filter(dimension => {
+        val allDepResolved = !dimension.parents.exists( p => !addedItems.contains(p))
+        if(allDepResolved) {
+          resolvedDimensions :+= dimension
+          addedItems.add(dimension)
+        }
+        !allDepResolved
+      })
+
+      // Send several queries when the number of items is large
+      for(splitItems <- splitItemsAt(resolvedDimensions, 10000)) {
+        dimensionsDep :+= splitItems
+      }
+//      var curItemsToAdd = Vector[Dimension]()
+//      for((d, i) <- resolvedDimensions.zipWithIndex) {
+//        if(i % 10000 == 0 && i != 0) {
+//          dimensionsDep :+= curItemsToAdd
+//          curItemsToAdd = Vector[Dimension]()
+//        }
+//        addedItems.add(d)
+//        curItemsToAdd :+= d
+//      }
+//      dimensionsDep :+= curItemsToAdd
+    }
+  }
+
+  def sendItems(items: Seq[ItemSerializable], kind: String) = {
+    val data = write(items.map(item => item.serialize))
+    val res = Http(s"${server}/${kind}/index").postData(data).header("content-type", "application/json").asString
+    val ids = read[MappedIds](res.body)
+    for((item, id) <- items.zip(ids._id)) {
+      item._id = Some(id)
+    }
+  }
+
+  def send() = {
+    buildDependencies
+    sendItems(categories, "category")
+    sendItems(units, "unit")
+    for(dimensions <- dimensionsDep) {
+      sendItems(dimensions, "dimension")
+    }
+    sendItems(oois, "ooi")
+
+    println("Sending facts " + facts.size)
+    for(factsSplit <- splitItemsAt(facts, 10000)) {
+      println("Sending")
+      sendItems(factsSplit, "fact")
+    }
+  }
+
+  def splitItemsAt(items: Vector[ItemSerializable], at: Int) : Vector[Vector[ItemSerializable]] = {
+    var curItemsToAdd = Vector[ItemSerializable]()
+    var splittedItems = Vector[Vector[ItemSerializable]]()
+    for((item, idx) <- items.zipWithIndex) {
+      if(idx % at == 0 && idx != 0) {
+        splittedItems :+= curItemsToAdd
+        curItemsToAdd = Vector[ItemSerializable]()
+      }
+      curItemsToAdd :+= item
+    }
+    splittedItems
+  }
+
+//  def toJson: String = write(this)
+
+//  def toPrettyJson: String = writePretty(this)
 }

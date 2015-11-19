@@ -5,11 +5,12 @@ import org.json4s.JsonAST._
 /**
  * Created by nico on 20/10/15.
  */
-class Dimension(names: List[LocalizedString] = List(), descriptions: List[LocalizedString] = List(), val categories: List[Category] = List())
-  extends JsonSerializable(names, descriptions) {
+class Dimension(names: List[LocalizedString] = List(), descriptions: List[LocalizedString] = List(), val categories: List[Category] = List(), val parents: List[Dimension] = List())
+  extends JsonSerializable(names, descriptions, "dimension")
+  with ItemWithDependencies
+{
 
-  def serialize: JValue = {
-    val categoriesRefs = categories.map(category => JString(category.ref))
-    JObject(JField("categories", JArray(categoriesRefs.toList)) :: baseFields)
+  override def serialize: JValue = {
+    JObject(JField("categoryIds", getIds(categories)) :: JField("parentIds", getIds(parents)) :: baseFields)
   }
 }
