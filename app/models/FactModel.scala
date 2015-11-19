@@ -9,9 +9,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Created by nico on 02/11/15.
  */
-case class FactModel(_id: Option[String], _score: Option[Double], ooiId: List[String], dimensionIds: List[String], value: Option[Double], valueInt: Option[Long])
+case class FactModel(_id: Option[String], _score: Option[Double],
+                     ooiIds: List[String], dimensionIds: List[String],
+                     at: Option[java.util.Date],
+                     value: Option[Double], valueInt: Option[Long])
   extends BaseModel(_id, _score) {
-  val oois = Future.sequence(for(ooiId <- ooiId) yield { OoiRepository.byId(ooiId) })
+
+  val oois = Future.sequence(for(ooiId <- ooiIds) yield { OoiRepository.byId(ooiId) })
   val dimensions = Future.sequence(for(dimensionId <- dimensionIds) yield { DimensionRepository.byId(dimensionId) })
 
   def toJson: Future[JsObject] = {

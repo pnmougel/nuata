@@ -20,6 +20,10 @@ case class OoiModel(_id: Option[String], _score: Option[Double], names: Map[Stri
   override def getSearchQuery() = defaultSearchQuery
   override def getMatchQuery() = defaultMatchQuery
 
+  def isPerfectMatch(res: LocalizedNamedModel): Boolean = {
+    true
+  }
+
   def toJson : Future[JsObject] = {
     units.flatMap( items => { Future.sequence(items.map( item => { item.toJson.map(itemJson => itemJson) })) }).map( items => {
       Json.obj(

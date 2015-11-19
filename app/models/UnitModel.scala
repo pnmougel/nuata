@@ -15,6 +15,9 @@ case class UnitModel(_id: Option[String], _score: Option[Double], names: Map[Str
   override def getSearchQuery() = defaultSearchQuery
   override def getMatchQuery() = defaultMatchQuery
 
+  def isPerfectMatch(res: LocalizedNamedModel): Boolean = {
+    true
+  }
 
   def toJson : Future[JsObject] = {
     Future(Json.obj(

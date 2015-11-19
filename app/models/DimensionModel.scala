@@ -1,5 +1,6 @@
 package models
 
+import com.sksamuel.elastic4s.ElasticDsl._
 import play.api.libs.json.{JsObject, Json}
 import repositories.CategoryRepository
 
@@ -23,10 +24,14 @@ case class DimensionModel(
                            ) extends LocalizedNamedModel(_id, _score, names, descriptions) {
   val categories = Future.sequence(for(categoryId <- categoryIds) yield { CategoryRepository.byId(categoryId) })
 
+  def isPerfectMatch(res: LocalizedNamedModel): Boolean = {
+    true
+  }
+
   override def getIndexQuery() = {
     defaultIndexQuery ++ Map("categoryIds" -> categoryIds, "parentIds" -> parentIds)
   }
-  override def getSearchQuery() = defaultSearchQuery
+  override def getSearchQuery = defaultSearchQuery // must { termQuery("categoryIds", "AVEAaeytsFQ7gjHpyznm") }
   override def getMatchQuery() = defaultMatchQuery
 
   def toJson : Future[JsObject] = {

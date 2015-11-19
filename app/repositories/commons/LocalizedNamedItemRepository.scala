@@ -9,13 +9,13 @@ import org.json4s._
 import repositories.BaseRepository
 import shared.Languages
 
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
  * Created by nico on 02/11/15.
  */
-
 abstract class LocalizedNamedItemRepository[T](`type`: String)
   extends BaseRepository(`type`) {
   /**
@@ -28,6 +28,16 @@ abstract class LocalizedNamedItemRepository[T](`type`: String)
   def byId(id: String): Future[T] = {
     ElasticSearch.client.execute {get id id from path}.map(item => {
       fromJsonStr(item.getSourceAsString)
+    })
+  }
+
+  def byIdOpt(id: String): Future[Option[T]] = {
+    ElasticSearch.client.execute {get id id from path}.map(item => {
+      if(item.isExists) {
+        Some(fromJsonStr(item.getSourceAsString))
+      } else {
+        None
+      }
     })
   }
 
@@ -57,19 +67,48 @@ abstract class LocalizedNamedItemRepository[T](`type`: String)
     jsToInstance(org.json4s.jackson.JsonMethods.parse(jsonStr))
   }
 
-  def indexItem(model: LocalizedNamedModel) : Future[String] = {
-    client.execute(index into path fields model.getIndexQuery).map( result => result.getId)
+//  def indexItem(model: LocalizedNamedModel) : Future[String] = {
+//    client.execute(index into path fields model.getIndexQuery).map( result => result.getId)
+//  }
+
+  def indexItems(models: List[LocalizedNamedModel]) : Future[Array[String]] = {
+    val indexQueries = models.map( model => index into path fields model.getIndexQuery)
+    client.execute(bulk (indexQueries) ).map( results => {
+      results.getItems.map( _.getId )
+    })
   }
 
-  def searchExact(model: LocalizedNamedModel): Future[Array[T]] = {
-    // filteredQuery filter
-    client.execute(search in path query {
-      nestedQuery("names").query( bool { should { model.getSearchQuery } } )
-    }).map( res => { resultToEntity(res) })
+//  def searchExact(model: LocalizedNamedModel): Future[Array[T]] = {
+//    // filteredQuery filter
+//    client.execute(search in path query {
+//      nestedQuery("names").query( bool { should { model.getSearchQuery } } )
+//    }).map( res => { resultToEntity(res) })
+//  }
+
+  def searchExacts(models: List[LocalizedNamedModel]): Future[mutable.ArraySeq[Array[T]]] = {
+    val queries = models.map(model => {
+      search in path query {
+        nestedQuery("names").query( bool {
+          model.getSearchQuery
+        })
+      }})
+    client.execute( multi (queries)).map(res => {
+      res.getResponses.map { x =>
+        resultToEntity(x.getResponse)
+      }
+    })
   }
 
-  def searchMatch(model: LocalizedNamedModel): Future[Array[T]] = {
-    client.execute(search in path query { bool { should( model.getMatchQuery )}
-    }).map(res => { resultToEntity(res) })
+//  def searchMatch(model: LocalizedNamedModel): Future[Array[T]] = {
+//    client.execute(search in path query { bool { should( model.getMatchQuery )}
+//    }).map(res => { resultToEntity(res) })
+//  }
+
+  def searchMatches(models: List[LocalizedNamedModel]): Future[mutable.ArraySeq[Array[T]]] = {
+    val queries = models.map(model => search in path query { bool { should( model.getMatchQuery )} })
+
+    client.execute( multi (queries)).map(res => {
+      res.getResponses.map( x => resultToEntity(x.getResponse))
+    })
   }
 }

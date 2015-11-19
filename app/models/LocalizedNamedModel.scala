@@ -1,7 +1,8 @@
 package models
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{MatchQueryDefinition, QueryDefinition}
+import com.sksamuel.elastic4s.{BoolQueryDefinition, MatchQueryDefinition, QueryDefinition}
+import org.json4s.JsonAST.JString
 
 import scala.concurrent.Future
 
@@ -18,13 +19,15 @@ abstract class LocalizedNamedModel(
   def getIndexQuery : Map[String, Any]
   val defaultIndexQuery = Map("names" -> names, "descriptions" -> descriptions)
 
-  def getSearchQuery: List[QueryDefinition]
-  val defaultSearchQuery = (for((lang, localizedName) <- names) yield {
+  def getSearchQuery: BoolQueryDefinition
+  val defaultSearchQuery = should { (for((lang, localizedName) <- names) yield {
     filteredQuery filter termsFilter(s"names.${lang}.raw", localizedName:_*)
-  }).toList
+  }).toList }
 
   val defaultMatchQuery = nestedQuery("names").query( bool { should {
     for((lang, localizedName) <- names) yield { com.sksamuel.elastic4s.ElasticDsl.matchQuery(lang, localizedName) }
   } } )
   def getMatchQuery: QueryDefinition
+
+  def isPerfectMatch(res: LocalizedNamedModel): Boolean
 }

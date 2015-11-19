@@ -29,7 +29,7 @@ class DbInit extends Controller {
       field nested (langFields : _*)
     }
 
-    val categoryIds = "categoryIds" typed StringType index "not_analyzed"
+    val categoryIds = "categoryIds" typed StringType index "not_analyzed" fields("raw" typed StringType index "not_analyzed")
     val parentIds = "parentIds" typed StringType index "not_analyzed"
     val unitIds = "unitIds" typed StringType index "not_analyzed"
 
@@ -58,7 +58,7 @@ class DbInit extends Controller {
           "valueInt" typed LongType,
           "at" typed DateType,
           "dimensionIds" typed StringType index "not_analyzed",
-          "ooiId" typed StringType index "not_analyzed"
+          "ooiIds" typed StringType index "not_analyzed"
         ),
         "query" as (
           "query" typed StringType,

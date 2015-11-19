@@ -15,6 +15,10 @@ case class CategoryModel(_id: Option[String], _score: Option[Double], names: Map
   override def getSearchQuery() = defaultSearchQuery
   override def getMatchQuery() = defaultMatchQuery
 
+  def isPerfectMatch(res: LocalizedNamedModel): Boolean = {
+    true
+  }
+
   def toJson : Future[JsObject] = {
     Future(Json.obj(
       "names" -> names,

@@ -20,12 +20,24 @@ import scala.concurrent.Future
 class CrudCtrl extends Controller with Json4s {
   implicit val formats = DefaultFormats
 
-  def getItem(model: String, request: Request[json4s.JValue]) = {
-    model match {
-      case "category" => request.body.extract[CategoryModel]
-      case "dimension" => request.body.extract[DimensionModel]
-      case "unit" => request.body.extract[UnitModel]
-      case "ooi" => request.body.extract[OoiModel]
+  def getItems(model: String, request: Request[json4s.JValue]) = {
+    request.body.values match {
+      case x: List[_] => {
+        model match {
+          case "category" => request.body.extract[List[CategoryModel]]
+          case "dimension" => request.body.extract[List[DimensionModel]]
+          case "unit" => request.body.extract[List[UnitModel]]
+          case "ooi" => request.body.extract[List[OoiModel]]
+        }
+      }
+      case x: Map[_, _] => {
+        List(model match {
+          case "category" => request.body.extract[CategoryModel]
+          case "dimension" => request.body.extract[DimensionModel]
+          case "unit" => request.body.extract[UnitModel]
+          case "ooi" => request.body.extract[OoiModel]
+        })
+      }
     }
   }
 
@@ -43,8 +55,8 @@ class CrudCtrl extends Controller with Json4s {
 
   def index(model: String) = Action.async(json) { implicit rs =>
     if(validModels.contains(model)) {
-      val item = getItem(model, rs)
-      getRepository(model).indexItem(item).map( id => Ok(Json.obj("_id" -> id)) )
+      val items = getItems(model, rs)
+      getRepository(model).indexItems(items).map( id => Ok(Json.obj("_id" -> id)) )
     } else {
       Future.successful(Status(401)(Json.obj("error" -> s"Invalid parameter: $model")))
     }
@@ -52,8 +64,18 @@ class CrudCtrl extends Controller with Json4s {
 
   def find(model: String) = Action.async(json) { implicit rs =>
     if(validModels.contains(model)) {
-      val item = getItem(model, rs)
-      getRepository(model).searchExact(item).map( items =>
+
+//      val item = rs.body.values match {
+//        case x: List[_] => rs.body.extract[List[CategoryModel]]
+//        case x: Map[_, _] => List(rs.body.extract[CategoryModel])
+//      }
+
+//      val item = rs.body.extract[List[CategoryModel]]
+//      println(item)
+//      val item = getItem(model, rs)
+
+      val items = getItems(model, rs)
+      getRepository(model).searchExacts(items).map( items =>
         Ok(Extraction.decompose(items))
       )
     } else {
@@ -63,8 +85,8 @@ class CrudCtrl extends Controller with Json4s {
 
   def findMatch(model: String) = Action.async(json) { implicit rs =>
     if(validModels.contains(model)) {
-      val item = getItem(model, rs)
-      getRepository(model).searchMatch(item).map( items =>
+      val items = getItems(model, rs)
+      getRepository(model).searchMatches(items).map( items =>
         Ok(Extraction.decompose(items))
       )
     } else {
@@ -72,10 +94,24 @@ class CrudCtrl extends Controller with Json4s {
     }
   }
 
+  def byId(model: String, id: String) = Action.async { implicit rs =>
+    if(validModels.contains(model)) {
+      getRepository(model).byIdOpt(id).map( item => {
+        if(item.isDefined) {
+          Ok(Extraction.decompose(item))
+        } else {
+          Ok(Json.obj("error" -> s"Missing $model with id '$id'"))
+        }
+      })
+    } else {
+      Future.successful(Status(401)(Json.obj("error" -> s"Invalid parameter: $model")))
+    }
+  }
+
   def update(model: String) = Action.async(json) { implicit rs =>
     if(validModels.contains(model)) {
-      val item = getItem(model, rs)
-      getRepository(model).indexItem(item).map( id => Ok(Json.obj("id" -> id)) )
+      val items = getItems(model, rs)
+      getRepository(model).indexItems(items).map( id => Ok(Json.obj("id" -> id)) )
     } else {
       Future.successful(Status(401)(Json.obj("error" -> s"Invalid parameter: $model")))
     }
