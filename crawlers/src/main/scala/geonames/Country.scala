@@ -1,6 +1,6 @@
 package geonames
 
-import querybuilder.{LocalizedString, Query, Lang}
+import querybuilder.{Dimension, LocalizedString, Query, Lang}
 
 import scala.collection.mutable
 import scala.io.Source
@@ -60,7 +60,7 @@ object Country {
     val personUnit = query.addUnit(querybuilder.Lang.en("person"))
 
     val areaOOI = query.addOOI(
-      querybuilder.Lang.en("Area"),
+      querybuilder.Lang.en("Area") ::: querybuilder.Lang.fr("Surface", "Superficie"),
       querybuilder.Lang.en("Surface of an area"),
       units = List(squareMeterUnit))
 
@@ -76,7 +76,7 @@ object Country {
 
     // Create currencies
     for(currency <- currencies; if currency.nonEmpty) {
-      query.addDimension(Lang.en(currency), categories = List(areaInMapCategory, currencyCategory))
+      query.addDimension(Lang.en(currency), categories = List(currencyCategory))
     }
 
     // Create countries and their capitals
@@ -91,9 +91,10 @@ object Country {
         query.addDimension(Lang.en(country.capital), categories = List(areaInMapCategory, cityCategory, capitalCategory))
       }
     }
-
-    println(query.toPrettyJson)
   }
+
+  val countryCodeToNames = scala.collection.mutable.HashMap[String, (List[LocalizedString], String)]()
+  val countryCodeToCountry = scala.collection.mutable.HashMap[String, Country]()
 
   def read() = {
     for(line <- Source.fromFile("/home/nico/data/geonames/countryInfo.txt").getLines(); if !line.startsWith("#")) {
@@ -106,6 +107,11 @@ object Country {
       val equivalentFipsCode = if(elems.length == 19) Some(elems(18)) else None
 
       val country = Country(elems(4), elems(0), elems(1), elems(2), elems(3), elems(5), elems(6).toDouble, elems(7).toInt, continent, elems(9), elems(10), currencyName, elems(12), elems(13), elems(15).split(","), geoNameId, neighbours, equivalentFipsCode)
+
+      val localizedNames = GeoNames.getAlternateNames(geoNameId, LocalizedString(country.name, "en"))
+      countryCodeToNames(elems(0)) = (localizedNames, continent)
+      countryCodeToCountry(elems(0)) = country
+
       countries = country :: countries
       continents.add(continent)
       currencies.add(currencyName)

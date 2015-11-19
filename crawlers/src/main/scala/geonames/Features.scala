@@ -1,6 +1,8 @@
 package geonames
 
 
+import querybuilder.{Category, Lang}
+
 import scala.collection.mutable
 import scala.io.Source
 
@@ -9,10 +11,10 @@ import scala.io.Source
  */
 
 
-case class Feature(featureClass: String, code: String, name: String, description: Option[String])
+//case class Feature(featureClass: String, code: String, name: String, description: Option[String])
 
 object Features {
-  val features = mutable.HashMap[(String, String), Feature]()
+  val features = mutable.HashMap[(String, String), Category]()
   val featuresCodeToId = mutable.HashMap[(String, String), Long]()
   def read() = {
     for(line <- Source.fromFile("/home/nico/data/geonames/featureCodes_en.txt").getLines()) {
@@ -41,18 +43,32 @@ object Features {
         }
         */
       }
+      val description = featureDescription.map( desc => Lang.en(desc)).getOrElse(List())
+      val category = new Category(Lang.en(featureName), description)
 
-      features((featureClass, featureCode)) = Feature(featureClass, featureCode, featureName, featureDescription)
+      // features((featureClass, featureCode)) = Feature(featureClass, featureCode, featureName, featureDescription)
+      features((featureClass, featureCode)) = category
     }
-    features(("A", "")) = Feature("A", "", "country, state, region,...", None)
-    features(("H", "")) = Feature("H", "", "stream, lake, ...", None)
-    features(("L", "")) = Feature("L", "", "parks,area, ...", None)
-    features(("P", "")) = Feature("P", "", "city, village,...", None)
-    features(("R", "")) = Feature("R", "", "road, railroad", None)
-    features(("S", "")) = Feature("S", "", "spot, building, farm", None)
-    features(("T", "")) = Feature("T", "", "mountain,hill,rock,...", None)
-    features(("U", "")) = Feature("U", "", "undersea", None)
-    features(("V", "")) = Feature("V", "", "forest,heath,...", None)
-    features(("", "")) = Feature("", "", "Unknown", None)
+    features(("A", "")) = new Category(Lang.en("country, state, region,..."))
+    features(("H", "")) = new Category(Lang.en("stream, lake, ..."))
+    features(("L", "")) = new Category(Lang.en("parks,area, ..."))
+    features(("P", "")) = new Category(Lang.en("city, village,..."))
+    features(("R", "")) = new Category(Lang.en("road, railroad"))
+    features(("S", "")) = new Category(Lang.en("spot, building, farm"))
+    features(("T", "")) = new Category(Lang.en("mountain,hill,rock,..."))
+    features(("U", "")) = new Category(Lang.en("undersea"))
+    features(("V", "")) = new Category(Lang.en("forest,heath,..."))
+    features(("", "")) = new Category(Lang.en("Unknown"))
+
+//    features(("A", "")) = Feature("A", "", "country, state, region,...", None)
+//    features(("H", "")) = Feature("H", "", "stream, lake, ...", None)
+//    features(("L", "")) = Feature("L", "", "parks,area, ...", None)
+//    features(("P", "")) = Feature("P", "", "city, village,...", None)
+//    features(("R", "")) = Feature("R", "", "road, railroad", None)
+//    features(("S", "")) = Feature("S", "", "spot, building, farm", None)
+//    features(("T", "")) = Feature("T", "", "mountain,hill,rock,...", None)
+//    features(("U", "")) = Feature("U", "", "undersea", None)
+//    features(("V", "")) = Feature("V", "", "forest,heath,...", None)
+//    features(("", "")) = Feature("", "", "Unknown", None)
   }
 }
