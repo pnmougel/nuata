@@ -1,0 +1,8 @@
+
+POST        /index       controllers.CrudCtrl.index(model = "dimension")
+POST        /search      controllers.CrudCtrl.find(model = "dimension")
+POST        /match       controllers.CrudCtrl.findMatch(model = "dimension")
+GET         /:id         controllers.CrudCtrl.byId(model = "dimension", id : String)
+
+DELETE      /:id/category/:categoryId   controllers.DimensionCtrl.removeCategory(id, categoryId)
+DELETE      /:id/parent/:categoryId   controllers.DimensionCtrl.removeParent(id, categoryId)

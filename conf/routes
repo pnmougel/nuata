@@ -2,34 +2,29 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
+->  /dimension dimensions.Routes
+->  /category categories.Routes
+->  /unit units.Routes
+->  /ooi oois.Routes
+
 
 GET         /count/facts           controllers.Stats.countFacts
-GET         /q/:query              controllers.Search.searchFacts(query)
+GET         /q/:query              controllers.Search.searchFacts(query, dimensionIds: List[String] ?= List(), categoryIds: List[String] ?= List(), unitIds: List[String] ?= List(), ooiIds: List[String] ?= List())
 POST        /init                  controllers.DbInit.init
-
 GET         /autocomplete/:query   controllers.AutoComplete.autoComplete(query)
-
-POST        /category/index        controllers.CrudCtrl.index(model = "category")
-POST        /category/search       controllers.CrudCtrl.find(model = "category")
-POST        /category/match        controllers.CrudCtrl.findMatch(model = "category")
-GET         /category/:id          controllers.CrudCtrl.byId(model = "category", id : String)
-
-POST        /dimension/index       controllers.CrudCtrl.index(model = "dimension")
-POST        /dimension/search      controllers.CrudCtrl.find(model = "dimension")
-POST        /dimension/match       controllers.CrudCtrl.findMatch(model = "dimension")
-GET         /dimension/:id         controllers.CrudCtrl.byId(model = "dimension", id : String)
-
-POST        /unit/index            controllers.CrudCtrl.index(model = "unit")
-POST        /unit/search           controllers.CrudCtrl.find(model = "unit")
-POST        /unit/match            controllers.CrudCtrl.findMatch(model = "unit")
-GET         /unit/:id              controllers.CrudCtrl.byId(model = "unit", id : String)
-
-POST        /ooi/index             controllers.CrudCtrl.index(model = "ooi")
-POST        /ooi/search            controllers.CrudCtrl.find(model = "ooi")
-POST        /ooi/match             controllers.CrudCtrl.findMatch(model = "ooi")
-GET         /ooi/:id               controllers.CrudCtrl.byId(model = "ooi", id : String)
-
 POST        /fact/index            controllers.FactCtrl.index()
+POST        /source/index          controllers.SourceCtrl.index()
 
-GET         /test                  controllers.Test.test()
+
+GET         /language/:text        controllers.LanguageDetector.detect(text: String)
+GET         /eurostat/categories   controllers.Eurostat.getCategories
+# GET         /test                  controllers.Test.test()
+POST        /analyze/xls           xls.XlsAnalyzer.analyze()
+POST         /test2                 controllers.Test.getRawJson()
+GET         /test                 controllers.Test.test(start: Int ?= 0)
+
+GET         /:model/search          controllers.CrudCtrl.search(model: String, name: String ?= "", start: Int ?= 0, limit: Int ?= 10, categoryIds: List[String] ?= List(), parentIds: List[String] ?= List(), unitIds: List[String] ?= List(), operation: String ?= "starts", expand: Boolean ?= false)
+GET         /:model/id/:id         controllers.CrudCtrl.byId(model: String, id : String)
+GET         /dimension/children/:id   controllers.DimensionCtrl.getChildren(id: String)
+
+PUT         /dimension/:id          controllers.DimensionCtrl.updateItem(id: String)

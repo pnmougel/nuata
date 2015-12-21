@@ -1,0 +1,4 @@
+POST        /index            controllers.CrudCtrl.index(model = "unit")
+POST        /search           controllers.CrudCtrl.find(model = "unit")
+POST        /match            controllers.CrudCtrl.findMatch(model = "unit")
+# GET         /:id              controllers.CrudCtrl.byId(model = "unit", id : String)

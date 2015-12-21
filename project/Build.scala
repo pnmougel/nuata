@@ -38,7 +38,11 @@ object Build extends Build {
     "com.sksamuel.elastic4s" % "elastic4s-jackson_2.11" % "1.7.4",
 
     // Language detection
-    "com.optimaize.languagedetector" % "language-detector" % "0.5"
+    "com.optimaize.languagedetector" % "language-detector" % "0.5",
+
+    // Apache POI
+    "org.apache.poi" % "poi" % "3.13",
+    "org.apache.poi" % "poi-ooxml" % "3.13"
   )
 
   lazy val sampleStringTask = taskKey[String]("A sample string task.")
@@ -102,9 +106,16 @@ object Build extends Build {
 
 
   val inseeDependencies = Seq(
+    "org.json4s" %% "json4s-jackson" % "3.3.0",
+    "org.json4s" % "json4s-ext_2.10" % "3.3.0",
     "org.scalaj" %% "scalaj-http" % "1.1.5",
     "org.jsoup" % "jsoup" % "1.7.2",
-    "com.typesafe.play" %% "play-json" % "2.3.4"
+    "com.typesafe.play" %% "play-json" % "2.3.4",
+
+    // Apache POI
+    "org.apache.poi" % "poi" % "3.13",
+    "org.apache.poi" % "poi-ooxml" % "3.13",
+    "net.sourceforge.jexcelapi" % "jxl" % "2.6.12"
   )
 
   lazy val insee = (project in file("insee"))
@@ -112,6 +123,7 @@ object Build extends Build {
       name := appName,
       organization := "org.nuata",
       version := "0.1",
+      scalaVersion := "2.11.6",
       libraryDependencies ++= inseeDependencies
     )
 }

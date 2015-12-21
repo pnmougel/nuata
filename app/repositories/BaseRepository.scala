@@ -1,5 +1,6 @@
 package repositories
 
+import com.sksamuel.elastic4s.ElasticDsl
 import com.sksamuel.elastic4s.ElasticDsl._
 import elasticsearch.ElasticSearch
 import play.api.libs.json.{Json, JsValue}
@@ -14,7 +15,7 @@ class BaseRepository(`type`: String) {
   val client = ElasticSearch.client
 
   def count = {
-    ElasticSearch.client.execute { com.sksamuel.elastic4s.ElasticDsl.count from "nuata" types `type` }
+    ElasticSearch.client.execute { ElasticDsl.count from "nuata" types `type` }
   }
 
 }

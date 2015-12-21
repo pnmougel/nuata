@@ -19,4 +19,20 @@ object DimensionRepository extends LocalizedNamedItemRepository[DimensionModel](
   protected def jsToInstance(jValue: JValue) = jValue.extract[DimensionModel]
 
   def resultToEntity(res: SearchResponse) = res.as[DimensionModel]
+
+  def removeDependency(dimensionId: String, dependencyId: String, dependencyType: String) = {
+    byIdOpt(dimensionId).map(dimensionOpt => {
+      for(dimension <- dimensionOpt) yield {
+        val prevList = dependencyType match {
+          case "parentIds" => dimension.parentIds
+          case "categoryIds" => dimension.categoryIds
+          case _ => List[String]()
+        }
+        val newIds = prevList.filter(_ != dependencyId)
+        client.execute {
+          update id dimensionId in path docAsUpsert (dependencyType -> newIds)
+        }
+      }
+    })
+  }
 }

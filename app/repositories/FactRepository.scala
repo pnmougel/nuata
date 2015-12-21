@@ -24,7 +24,7 @@ object FactRepository extends LocalizedNamedItemRepository[FactModel]("fact") {
 
   def indexFacts(facts: List[FactModel]): Future[Array[String]] = {
     val indexQueries = facts.map( fact => {
-      var indexQuery = Map[String, Any]("dimensionIds" -> fact.dimensionIds, "ooiIds" -> fact.ooiIds)
+      var indexQuery = Map[String, Any]("dimensionIds" -> fact.dimensionIds, "ooiIds" -> fact.ooiIds, "sourceIds" -> fact.sourceIds)
       for(v <- fact.value) { indexQuery += ("value" -> v) }
       for(v <- fact.valueInt) { indexQuery += ("valueInt" -> v) }
       for(v <- fact.at) { indexQuery += ("at" -> v) }
@@ -33,11 +33,5 @@ object FactRepository extends LocalizedNamedItemRepository[FactModel]("fact") {
     client.execute(bulk (indexQueries) ).map( results => {
       results.getItems.map( _.getId )
     })
-
-
-//    for(v <- fact.value) { indexQuery += ("value" -> v) }
-//    for(v <- fact.valueInt) { indexQuery += ("valueInt" -> v) }
-//    for(v <- fact.at) { indexQuery += ("at" -> v) }
-//    client.execute(index into path fields indexQuery).map( result => result.getId)
   }
 }

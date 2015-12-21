@@ -1,0 +1,8 @@
+
+
+POST        /index        controllers.CrudCtrl.index(model = "category")
+
+# Should be removed
+POST        /search       controllers.CrudCtrl.find(model = "category")
+POST        /match        controllers.CrudCtrl.findMatch(model = "category")
+# GET         /:id          controllers.CrudCtrl.byId(model = "category", id : String)
